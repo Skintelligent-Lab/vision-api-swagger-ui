@@ -11,8 +11,8 @@ info:
   contact:
     name: Brian Keating
     email: brian@skintelligentlab.com
-  license:
-    name: Proprietary to Skintelligent. All rights reserved
+  # license:
+  #   name: Proprietary to Skintelligent. All rights reserved
 
 components:
   securitySchemes:
