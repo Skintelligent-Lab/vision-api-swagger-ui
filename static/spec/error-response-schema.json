@@ -1,0 +1,23 @@
+{
+    "description": "Generic error response",
+    "type": "object",
+    "properties": {
+        "code": {
+          "description": "An error code, used for internal debugging purposes",
+          "type": "integer"
+        },
+        "message": {
+          "description": "A human-readable description of the error",
+          "type": "string"
+        },
+        "type": {
+          "description": "A single-word description of the error. (The class name of the Exception)",
+          "type": "string"
+        }
+    },
+    "required": [
+      "code",
+      "message",
+      "type"
+    ]
+}

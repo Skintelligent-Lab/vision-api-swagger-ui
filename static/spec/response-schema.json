@@ -1,0 +1,354 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Analysis results for all skin conditions",
+    "properties": {
+        "im_url": {
+            "type": "string",
+            "format": "uri"
+        },
+        "acne": {
+            "type": "object",
+            "description": "Detection of acne lesions: bounding boxes and scores. Detections are split into one object per type of acne lesion",
+            "properties": {
+                "overallScore": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5
+                },
+                "lesions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lesionDetection"
+                    }
+                },
+                "vis_im_url": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "overallScore",
+                "lesions",
+                "vis_im_url"
+            ]
+        },
+        "melasma": {
+            "type": "object",
+            "properties": {
+                "overallScore": {
+                    "description": "A single overall score characterizing melasma severity. 0=absent, 10=most severe",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "lesions": {
+                    "type": "array",
+                    "items": {
+                        "description": "A lesion polygon with darkness score",
+                        "type": "object",
+                        "properties": {
+                            "darkness": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "polygon": {
+                                "description": "An array of 2d image points",
+                                "type": "array",
+                                "minItems": 3,
+                                "items": {
+                                    "description": "A 2d image point in format (row, column). Origin is at top-left of image, rows increase top-to-bottom; columns increase from left-to-right",
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                    "items": {
+                                        "type": "number"
+                                    }
+                                }
+                            },
+                            "type": {
+                                "description": "Lesion type, used to identify these lesions when mixed with other hyperpigmentation detections. Should always be 'melasma'",
+                                "const": "melasma"
+                            }
+                        },
+                        "required": [
+                            "darkness",
+                            "polygon"
+                        ]
+                    }
+                },
+                "vis_im_url": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "overallScore",
+                "lesions",
+                "vis_im_url"
+            ]
+        },
+        "freckles": {
+            "type": "object",
+            "properties": {
+                "overallScore": {
+                    "description": "A single overall score characterizing severity of small, freckle-like lesions. 0=absent, 4=most severe",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "frecklesScore": {
+                    "description": "A single overall score characterizing severity of freckles. 0=absent, 4=most severe",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "lesions": {
+                    "type": "array",
+                    "items": {
+                        "description": "A lesion polygon with darkness score",
+                        "type": "object",
+                        "properties": {
+                            "darkness": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "polygon": {
+                                "description": "An array of 2d image points",
+                                "type": "array",
+                                "minItems": 3,
+                                "items": {
+                                    "description": "A 2d image point in format (row, column). Origin is at top-left of image, rows increase top-to-bottom; columns increase from left-to-right",
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                    "items": {
+                                        "type": "number"
+                                    }
+                                }
+                            },
+                            "type": {
+                                "description": "Lesion type",
+                                "enum": [
+                                    "Freckles",
+                                    "PIH",
+                                    "Seborrheic Keratosis",
+                                    "Other"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "darkness",
+                            "polygon"
+                        ]
+                    }
+                },
+                "vis_im_url": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "overallScore",
+                "frecklesScore",
+                "lesions",
+                "vis_im_url"
+            ]
+        },
+        "wrinkles": {
+            "type": "object",
+            "description": "Wrinkles analysis results: detection of individual wrinkle pixels + overall wrinkle scores for facial regions.",
+            "properties": {
+                "overallScore": {
+                    "description": "A single overall score characterizing wrinkle severity. Follows the Allergean forehead line scale: 0=none, 1=minimal, 2=moderate, 3=deep, 4=extreme",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "numRows": {
+                    "description": "The number of rows in the input image. Can be used to reconstruct a full-sized overlay image.",
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 10000
+                },
+                "numCols": {
+                    "description": "The number of columns in the input image. Can be used to reconstruct a full-sized overlay image.",
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 10000
+                },
+                "pixelDetections": {
+                    "description": "Wrinkle scores for individual pixels. Only pixels with non-zero wrinkle scores are included. These can be used with numCols and numRows to create a wrinkle overlay image for visualization.",
+                    "type": "object",
+                    "properties": {
+                        "rows": {
+                            "description": "Image rows of pixels that contain wrinkles. Must be same length as columns and scores.",
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1000000
+                            }
+                        },
+                        "columns": {
+                            "description": "Image columns of pixels that contain wrinkles. Must be same length as rows and scores.",
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1000000
+                            }
+                        },
+                        "scores": {
+                            "description": "Severity scores for pixels that contain wrinkles. Must be same length as rows and columns",
+                            "type": "array",
+                            "items": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1000000
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "regions": {
+                    "description": "Wrinkle scores for facial regions",
+                    "type": "object",
+                    "properties": {
+                        "above_upper_lip": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "below_lower_lip": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "chin": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "forehead": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "glabella": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "left_crowsfeet": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "left_marionette": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "left_nasolabial": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "right_crowsfeet": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "right_marionette": {
+                            "$ref": "#/definitions/scoredRegion"
+                        },
+                        "right_nasolabial": {
+                            "$ref": "#/definitions/scoredRegion"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "vis_im_url": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "overallScore",
+                "numRows",
+                "numCols",
+                "pixelDetections",
+                "regions",
+                "vis_im_url"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "im_url"
+    ],
+    "definitions": {
+        "imageBoundingBox": {
+            "description": "Bounding box of an object inside an image. Format is (top-left column, top-left row, bottom-right column, bottom-right row)",
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": [
+                {
+                    "type": "integer"
+                }
+            ]
+        },
+        "lesionDetection": {
+            "description": "A single detected lesion: image bounding box, class name (i.e., type) and confidence score",
+            "type": "object",
+            "properties": {
+                "boundingBox": {
+                    "$ref": "#/definitions/imageBoundingBox"
+                },
+                "score": {
+                    "description": "Confidence score for this detection",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "type": {
+                    "enum": [
+                        "inflammatory",
+                        "comedone",
+                        "PIH"
+                    ]
+                }
+            },
+            "required": [
+                "boundingBox",
+                "score",
+                "type"
+            ]
+        },
+        "scoredRegion": {
+            "description": "A region of interest with a numerical wrinkle severity score. The region is defined by an array of Polygons.",
+            "type": "object",
+            "properties": {
+                "score": {
+                    "description": "Severity score between 0 and 4 for this region. 0=None, 1=Minimal, 2=Moderate, 3=Deep, 4=Extreme. A score of -1 indicates that the region could not be scored, usually due to facial hair.",
+                    "type": "number",
+                    "minimum": -1,
+                    "maximum": 4
+                },
+                "polygons": {
+                    "description": "A set of Polygons that define the region. Usually (but not always) there will be only one Polygon.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polygon"
+                    }
+                }
+            },
+            "required": [
+                "score",
+                "polygons"
+            ],
+            "additionalProperties": false
+        },
+        "polygon": {
+            "description": "An array of 2d image points",
+            "type": "array",
+            "minItems": 3,
+            "items": {
+                "description": "A 2d image point in format (row, column). Origin is at top-left of image, rows increase top-to-bottom; columns increase from left-to-right.",
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}

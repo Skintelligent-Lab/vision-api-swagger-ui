@@ -1,0 +1,226 @@
+openapi: 3.0.0
+
+info:
+  title: Skintelligent Vision API
+  version: 2.0.0
+  summary: The Skintelligent Vision API
+  description: An API for analyzing images for skin health. The primary API endpoint accepts an 
+    image (either file or URL) for facial analysis. If the image is a valid image of a face, the 
+    API will return a JSON response containing an analysis of the health of the face for a variety 
+    of skin concerns.
+  contact:
+    name: Brian Keating
+    email: brian@skintelligentlab.com
+  license:
+    name: Proprietary to Skintelligent. All rights reserved
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  responses:
+    Unauthorized:
+      description: Unauthorized request. Missing or incorrect basic auth credentials
+      content:
+        application/json:
+          schema: 
+            $ref: error-response-schema.json
+    UnexpectedServerError:
+      description: A catchall response for uncaught server errors
+      content:
+        application/json:
+          schema: 
+            $ref: error-response-schema.json
+
+paths:
+  /:
+    get:
+      operationId: helloWorld
+      summary: Verify you can connect to the API
+      responses:
+        '200':
+          description: Responds with the text 'You have successfully connected to the
+            Skintelligent vision API!' (or similar)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    security:
+      - basicAuth: []
+
+  /analyze:
+    post:
+      summary: Analyze a face image for the presence and severity of several skin conditions
+      description: 'Given an image of a single individual''s face, assess the presence and severity for one or all of: acne, wrinkles, and hyperpigmentations.'
+      operationId: analyzeImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties:
+                im_url:
+                  description: Image URL. Typically this would be the path to an image in S3
+                  type: string
+                  format: uri
+            example:
+              im_url: https://skintelligrnt-config.s3.amazonaws.com/1/201b2d7f-d602-4c35-9e81-9337b48d80f3.jpg
+          multipart/form-data:
+            schema: 
+              type: object
+              properties:
+                image:
+                  description: Image file
+                  type: string
+                  format: binary
+      parameters:
+
+        # acne
+        - in: query
+          name: inflammatory_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: '8b7f71'
+          description: Color of marker for inflammatory acne lesions. Specified as a 6-character hex string.
+        - in: query
+          name: pih_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: 'f68d76'
+          description: Color of marker for PIH acne lesions. Specified as a 6-character hex string.
+        - in: query
+          name: comedone_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: '48b9c7'
+          description: Color of marker for comedonal acne lesions. Specified as a 6-character hex string.
+        - in: query
+          name: inflammatory_shape
+          schema:
+            type: string
+            enum: [square, circle]
+            default: square
+          description: Shape of marker for inflammatory acne lesions
+        - in: query
+          name: pih_shape
+          schema:
+            type: string
+            enum: [square, circle]
+            default: circle
+          description: Shape of marker for PIH acne lesions
+        - in: query
+          name: comedone_shape
+          schema:
+            type: string
+            enum: [square, circle]
+            default: circle
+          description: Shape of marker for comedonal acne lesions
+        - in: query
+          name: marker_radius
+          schema:
+            type: integer
+            default: 17
+            minimum: 2
+            maximum: 50
+          description: Size of markers for acne lesions (radius of circlies or length of side for squares). The same `marker_radius` is used for all lesion types. 
+        - in: query
+          name: marker_thickness
+          schema:
+            type: integer
+            default: 4
+            minimum: 1
+            maximum: 10
+          description: Line thickness for acne lesions markers. The same `marker_thickness` is used for all lesion types. 
+
+        # wrinkles
+        - in: query
+          name: max_score
+          schema:
+            type: number
+            default: 0.08
+            minimum: 0
+            maximum: 1
+          description: The maximum wrinkle response score for color mapping purposes. Pixels with a wrinkle score `>= max_score` will be display with the maximum (saturated) color on the wrinkle vis image. Reduce this number to make more of the wrinkles look severe on the vis image; increase this number to make more of the wrinkles look mild on the vis image.
+        - in: query
+          name: colormap
+          schema:
+            type: string
+            default: 'rainbow'
+          description: Colormap for wrinkle vis overlay. Select from [the matplotlib colormaps](https://matplotlib.org/stable/gallery/color/colormap_reference.html)
+        - in: query
+          name: sigma
+          schema:
+            type: number
+            default: 3
+          description: How much to blur the wrinkle response image before creating the overlay. Large `sigma` produces smoother wrinkle overlays, but can wash out details of interest. If you increase `sigma` significantly, then you typically want to reduce `max_score`
+
+        # hyperpigmentation
+        - in: query
+          name: melasma_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: '6AC6C5'
+          description: Polygon color for melasma lesions. Specified as a 6-character hex string.
+        - in: query
+          name: keratosis_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: 'F6559C'
+          description: Polygon color for keratosis lesions. Specified as a 6-character hex string.
+        - in: query
+          name: freckles_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: 'FBBC01'
+          description: Polygon color for freckles lesions. Specified as a 6-character hex string.
+        - in: query
+          name: other_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: 'E76155'
+          description: Polygon color for other hyperpigmentation lesions. Specified as a 6-character hex string.
+        - in: query
+          name: other_color
+          schema:
+            type: string
+            minLength: 6
+            maxLength: 6
+            default: 'E76155'
+          description: Polygon color for other hyperpigmentation lesions. Specified as a 6-character hex string.
+        - in: query
+          name: line_width
+          schema:
+            type: integer
+            minLength: 1
+            maxLength: 10
+            default: 4
+          description: Width of polygon lines for hyperpigmentation lesions. The same `line_width` is used for hyperpigmentation lesion types. 
+
+      responses:
+        200:
+          description: Successful analysis
+          content:
+            application/json:
+              schema: 
+                $ref: response-schema.json
+        400:
+          description: A client-side error. Usually this is due to a malformed request or an invalid image file/image URL in the request.
+        401:
+          description: Unauthorized request. The client failed to send basic auth credentials or the credentials were incorrect
+        500:
+          description: A server-side error. This includes uncaught Exceptions and issues with processing the provided image.
+                

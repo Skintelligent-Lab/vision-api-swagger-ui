@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    
+    "type": "object",
+    "properties": {
+        "overallScore": {
+            "description": "A single overall score characterizing severity of small, freckle-like lesions. 0=absent, 4=most severe",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+        },
+        "frecklesScore": {
+            "description": "A single overall score characterizing severity of freckles. 0=absent, 4=most severe",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+        },
+        "lesions": {
+            "type": "array",
+            "items": {
+                "description": "A lesion polygon with darkness score",
+                "type": "object",
+                "properties": {
+                    "darkness": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                    },
+                    "polygon": {
+                        "description": "An array of 2d image points",
+                        "type": "array",
+                        "minItems": 3,
+                        "items": {
+                            "description": "A 2d image point in format (row, column). Origin is at top-left of image, rows increase top-to-bottom; columns increase from left-to-right",
+                            "type": "array",
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "type": {
+                        "description": "Lesion type",
+                        "enum": [
+                            "Freckles",
+                            "PIH",
+                            "Seborrheic Keratosis",
+                            "Other"
+                        ]
+                    }
+                },
+                "required": [
+                    "darkness",
+                    "polygon"
+                ]
+            }
+        }
+    },
+    "required": [
+        "overallScore",
+        "frecklesScore",
+        "lesions"
+    ]
+}

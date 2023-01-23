@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    
+    "type": "object",
+    "description": "Detection of acne lesions: bounding boxes and scores. Detections are split into one object per type of acne lesion",
+    "properties": {
+        "overallScore": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+        },
+        "lesions": {
+            "type": "array",
+            "items": {
+            "$ref": "#/definitions/lesionDetection"
+            }
+        }
+    },
+    "required": [
+        "overallScore",
+        "lesions"
+    ],
+
+    "definitions": {
+
+        "imageBoundingBox": {
+            "description": "Bounding box of an object inside an image. Format is (top-left column, top-left row, bottom-right column, bottom-right row)",
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": [
+                {
+                    "type": "integer"
+                }
+            ]
+        },
+
+        "lesionDetection": {
+            "description": "A single detected lesion: image bounding box, class name (i.e., type) and confidence score",
+            "type": "object",
+            "properties": {
+                "boundingBox": {
+                    "$ref": "#/definitions/imageBoundingBox"
+                },
+                "score": {
+                    "description": "Confidence score for this detection",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "type": {
+                    "enum": ["inflammatory", "comedone", "PIH"]
+                }
+            },
+            "required": [
+                "boundingBox",
+                "score",
+                "type"
+            ]
+        }
+    }
+}
